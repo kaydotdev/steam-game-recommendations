@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "steam-game-recommendations"
+version = "0.1.0"
+description = "Building an open hybrid recommender system for Steam"
+authors = ["Anton Kozyriev"]
+readme = "README.md"
+packages = [
+    {include = "common", from = "src"},
+    {include = "engine", from = "src"},
+    {include = "insights", from = "src"},
+    {include = "processing", from = "src"},
+    {include = "webcrawlers", from = "src"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+ruff = "^0.0.285"
+
+[tool.poetry.group.webcrawl.dependencies]
+scrapy = "^2.10.0"
+
+[tool.ruff]
+select = ["A", "B", "C4", "E", "EM", "F", "I", "Q", "UP"]
+ignore = ["E501"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
