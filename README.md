@@ -4,3 +4,4 @@
 [![Kaggle dataset](https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=Kaggle&logoColor=white)](https://www.kaggle.com/datasets/antonkozyriev/game-recommendations-on-steam)
 
 Building an open hybrid recommender system for Steam
+
