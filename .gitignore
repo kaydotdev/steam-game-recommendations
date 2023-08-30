@@ -252,6 +252,9 @@ dmypy.json
 # Streamlit configs
 .streamlit/
 
+# intermediate data in ETL
+.data/
+
 ### venv ###
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
