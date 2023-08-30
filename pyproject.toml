@@ -19,8 +19,20 @@ python = "^3.10"
 pytest = "^7.4.0"
 ruff = "^0.0.285"
 
+[tool.poetry.group.dev]
+optional = true
+
 [tool.poetry.group.webcrawl.dependencies]
 scrapy = "^2.10.0"
+
+[tool.poetry.group.webcrawl]
+optional = true
+
+[tool.poetry.group.pipeline.dependencies]
+pyspark = "3.1.1"
+
+[tool.poetry.group.pipeline]
+optional = true
 
 [tool.ruff]
 select = ["A", "B", "C4", "E", "EM", "F", "I", "Q", "UP"]
