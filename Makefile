@@ -23,7 +23,13 @@ test:
 
 .PHONY: crawl
 # Run a webcrawler in background with default configs
+# To record logs to the file set filename in `SCRAPY_LOG_TARGET` env variable
 crawl:
-	cd src/webcrawlers; \
-		nohup poetry run scrapy crawl gameswithreviews -o "../.data/raw.json" > /dev/null 2>&1 &
+	@if [ -n "$$SCRAPY_LOG_TARGET" ]; then \
+		LOG_TARGET=$$SCRAPY_LOG_TARGET; \
+	else \
+		LOG_TARGET="/dev/null"; \
+	fi; \
+	cd src/webcrawlers && \
+		nohup poetry run scrapy crawl gameswithreviews -o "../.data/raw.json" > "$$LOG_TARGET" 2>&1 &
 
