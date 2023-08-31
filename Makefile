@@ -31,5 +31,5 @@ crawl:
 		LOG_TARGET="/dev/null"; \
 	fi; \
 	cd src/webcrawlers && \
-		nohup poetry run scrapy crawl gameswithreviews -o "../.data/raw.json" > "$$LOG_TARGET" 2>&1 &
+		nohup poetry run scrapy crawl gameswithreviews -o "../.data/raw.jl" > "$$LOG_TARGET" 2>&1 &
 

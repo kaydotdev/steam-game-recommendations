@@ -79,7 +79,7 @@ class GameswithReviewsSpider(scrapy.Spider):
     def parse_review(self, response, **kwargs):
         for card in response.css(".apphub_Card"):
             yield {
-                "record": "review",
+                "type": "review",
                 "content": {
                     "app_id": kwargs.get("app_id"),
                     "found_helpful": card.css("div.found_helpful").get(),
