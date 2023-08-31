@@ -12,7 +12,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Util to repartition *.JSON lines file into chunks for faster processing.")
 
-    parser.add_argument("--input", type=str, default="../.data/raw.json", help="A path to datafile to repartiton.")
+    parser.add_argument("--input", type=str, default="../.data/raw.jl", help="A path to datafile to repartiton.")
     parser.add_argument("--output", type=str, default="../.data/dataframe", help="A path to output repartitioned dataset.")
     parser.add_argument("--partitions", type=int, default=48, help="Number of partitions in the output.")
 
@@ -33,7 +33,8 @@ def main():
     logger.info(f"Partitioning datafile `{args.input}` into `{args.partitions}` chunks")
 
     df = spark.read.format("json").option("lines", "true").load(args.input)
-    df.coalesce(args.partitions).write.format("json").mode("overwrite").save(args.output)
+    df.coalesce(args.partitions).write.format("json")\
+        .option("ignoreNullFields", False).mode("overwrite").save(args.output)
 
     logger.info(f"Partitions successfully recorded into directory `{args.output}`")
 
