@@ -13,10 +13,10 @@ def main():
 
     parser = argparse.ArgumentParser(description="Util to repartition *.JSON lines file into chunks for faster processing.")
 
-    parser.add_argument("--input", type=str, default=".data/raw.jl", help="A path to datafile to repartiton.")
-    parser.add_argument("--output", type=str, default=".data/dataframe", help="A path to output repartitioned dataset.")
-    parser.add_argument("--memory", type=str, default="45G", help="Spark driver memory size.")
-    parser.add_argument("--partitions", type=int, default=48, help="Number of partitions in the output.")
+    parser.add_argument("-i", "--input", type=str, default=".data/raw.jl", help="A path to datafile to repartiton.")
+    parser.add_argument("-o", "--output", type=str, default=".data/dataframe", help="A path to output repartitioned dataset.")
+    parser.add_argument("-m", "--memory", type=str, default="45G", help="Spark driver memory size.")
+    parser.add_argument("-p", "--partitions", type=int, default=48, help="Number of partitions in the output.")
 
     args = parser.parse_args()
 
@@ -27,7 +27,7 @@ def main():
     spark = SparkSession.builder \
         .appName("Steam reviews dataset: Repartition script")\
         .master("local[*]")\
-        .config("spark.driver.memory",spark_memory)\
+        .config("spark.driver.memory", spark_memory)\
         .config("spark.driver.maxResultSize", "0")\
         .config("spark.kryoserializer.buffer.max", "2000M")\
         .getOrCreate()
