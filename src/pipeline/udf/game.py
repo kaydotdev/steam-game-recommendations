@@ -4,7 +4,7 @@ import re
 from pyspark.sql.functions import udf
 from pyspark.sql.types import BooleanType, DoubleType, IntegerType, StringType
 
-from .common import re_first_or_default
+from .common import cast_or_default, re_first_or_default
 
 
 def parse_title_or_default(title: str | None, default=None) -> str | None:
@@ -47,10 +47,7 @@ def parse_positive_ratio_or_default(positive_ratio: str | None, default=None) ->
 
     field_match = re_first_or_default(r"<br>(\d+)\%", positive_ratio, default=default)
 
-    try:
-        return int(field_match.strip())
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(int, field_match.strip(), default=default)
 
 def parse_reviews_number_or_default(reviews_number: str | None, default=None) -> int | None:
     """Parses 'User reviews' raw HTML field from the game page profile.
@@ -65,10 +62,7 @@ def parse_reviews_number_or_default(reviews_number: str | None, default=None) ->
 
     field_match = re_first_or_default(r"the ([\d,]+) user", reviews_number, default=default)
 
-    try:
-        return int(field_match.strip().replace(",", ""))
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(int, field_match.strip().replace(",", ""), default=default)
 
 def parse_pricing_or_default(pricing: str | None, default=None) -> float | None:
     """Parses 'Pricing' raw HTML field from the game page profile. Price value is displayed in `$`.
@@ -110,15 +104,9 @@ def parse_original_price_or_default(original_price: str | None, default=0.0) -> 
     elif "color: #888888;" in parsed_price:
         extracted_price = re.findall(r"<strike>\$([\S]+)</strike>", parsed_price)[0]
 
-        try:
-            return float(extracted_price.strip())
-        except (ValueError, TypeError):
-            return default
+        return cast_or_default(float, extracted_price.strip(), default=default)
 
-    try:
-        return float(parsed_price.replace("$", ""))
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(float, parsed_price.replace("$", ""), default=default)
 
 def calculate_discount(args: list) -> float | None:
     """Calculates discount from aggregated columns of `final` and `original` game price.

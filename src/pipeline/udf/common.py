@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import List, Pattern
+from typing import Any, List, Pattern, Type
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import udf
@@ -19,6 +19,23 @@ def clean_df(df: DataFrame, columns: list) -> DataFrame:
     """
 
     return df.dropDuplicates(columns).dropna(subset=tuple(columns))
+
+def cast_or_default(_type: Type, value: Any, default=None) -> Any | None:
+    """Converts input `value` to `_type`. If cast fails, returns `default` argument.
+
+    Args:
+        _type (Type): Output type.
+        value (Any): Input value to cast.
+        default (Any | None, optional): Return value if parsing failed. Defaults to None.
+
+    Returns:
+        Any | None: Converted type.
+    """
+
+    try:
+        return _type(value)
+    except (ValueError, TypeError):
+        return default
 
 def re_first_or_default(pattern: str | Pattern[str], string: str | None, default=None) -> str | None:
     """Return first occurence of all non-overlapping matches in the string.

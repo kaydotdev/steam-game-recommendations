@@ -3,7 +3,7 @@ from datetime import datetime
 from pyspark.sql.functions import udf
 from pyspark.sql.types import BooleanType, DateType, DoubleType, IntegerType
 
-from .common import normalize_date_or_default, re_first_or_default
+from .common import cast_or_default, normalize_date_or_default, re_first_or_default
 
 
 def parse_found_helpful_or_default(field_text: str | None, default=0) -> int:
@@ -20,10 +20,7 @@ def parse_found_helpful_or_default(field_text: str | None, default=0) -> int:
 
     field_match = re_first_or_default(r"([\d,]+) people found this review helpful", field_text, default=str(default))
 
-    try:
-        return int(field_match.replace(",", ""))
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(int, field_match.replace(",", ""), default=default)
 
 def parse_found_funny_or_default(field_text: str | None, default=0) -> int:
     """Parses 'Found funny' raw HTML field from the review page.
@@ -39,10 +36,7 @@ def parse_found_funny_or_default(field_text: str | None, default=0) -> int:
 
     field_match = re_first_or_default(r"([\d,]+) people found this review funny", field_text, default=str(default))
 
-    try:
-        return int(field_match.replace(",", ""))
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(int, field_match.replace(",", ""), default=default)
 
 def parse_hours_or_default(field_text: str | None, default=0.0) -> float:
     """Parses 'Hours played' raw HTML field from the review page.
@@ -58,10 +52,7 @@ def parse_hours_or_default(field_text: str | None, default=0.0) -> float:
 
     field_match = re_first_or_default(r"([\d.]+) hrs on record", field_text, default=str(default))
 
-    try:
-        return float(field_match)
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(float, field_match, default=default)
 
 def parse_products_or_default(field_text: str | None, default=0) -> int:
     """Parses 'Products purchased' raw HTML field from the review page.
@@ -76,10 +67,7 @@ def parse_products_or_default(field_text: str | None, default=0) -> int:
 
     field_match = re_first_or_default(r"([\d,]+) products in account", field_text, default=str(default))
 
-    try:
-        return int(field_match.replace(",", ""))
-    except (ValueError, TypeError):
-        return default
+    return cast_or_default(int, field_match.replace(",", ""), default=default)
 
 def parse_date_review_or_default(field_text: str | None, default=None) -> datetime | None:
     """Parses 'Date posted' raw HTML field from the review page.
