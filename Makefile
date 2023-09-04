@@ -22,7 +22,7 @@ test:
 	poetry run pytest tests/
 
 .PHONY: crawl
-# Run a webcrawler in background with default configs
+# Run a webcrawler in background with default configs.
 # To record logs to the file set filename in `SCRAPY_LOG_TARGET` env variable
 crawl:
 	@if [ -n "$$SCRAPY_LOG_TARGET" ]; then \
@@ -48,7 +48,18 @@ run-pipeline-split:
 run-pipeline-transform:
 	cd src; poetry run python -m pipeline.transform
 
+.PHONY: run-pipeline-load
+# Run script for loading cleaned dataset into PostgreSQL database.
+# Set environment variables for target DB url as `SPARK_PIPELINE_DB_URL`
+# and authentication credentials as `SPARK_PIPELINE_DB_USER` and `SPARK_PIPELINE_DB_PASSWORD`
+# before running this command.
+run-pipeline-load:
+	cd src; poetry run python -m pipeline.load
+
 .PHONY: etl
 # Run ETL pipeline for webcrawled data
-etl: run-pipeline-repartition run-pipeline-split run-pipeline-transform
+# Set environment variables for target DB url as `SPARK_PIPELINE_DB_URL`
+# and authentication credentials as `SPARK_PIPELINE_DB_USER` and `SPARK_PIPELINE_DB_PASSWORD`
+# before running this command.
+etl: run-pipeline-repartition run-pipeline-split run-pipeline-transform run-pipeline-load
 
