@@ -4,6 +4,8 @@ import re
 from pyspark.sql.functions import udf
 from pyspark.sql.types import BooleanType, DoubleType, IntegerType, StringType
 
+from .common import re_first_or_default
+
 
 def parse_title_or_default(title: str | None, default=None) -> str | None:
     """Parses game title raw HTML field from the game page profile.
@@ -43,13 +45,10 @@ def parse_positive_ratio_or_default(positive_ratio: str | None, default=None) ->
         int | None: Parsed 'Positive reviews ratio' value.
     """
 
-    if positive_ratio is None:
-        return default
-
-    extracted_ratio = re.findall(r"<br>(\d+)\%", positive_ratio)[0]
+    field_match = re_first_or_default(r"<br>(\d+)\%", positive_ratio, default=default)
 
     try:
-        return int(extracted_ratio.strip())
+        return int(field_match.strip())
     except (ValueError, TypeError):
         return default
 
@@ -64,13 +63,10 @@ def parse_reviews_number_or_default(reviews_number: str | None, default=None) ->
         int | None: Parsed 'User reviews' value.
     """
 
-    if reviews_number is None:
-        return default
-
-    extracted_reviews_number = re.findall(r"the ([\d,]+) user", reviews_number)[0]
+    field_match = re_first_or_default(r"the ([\d,]+) user", reviews_number, default=default)
 
     try:
-        return int(extracted_reviews_number.strip().replace(",", ""))
+        return int(field_match.strip().replace(",", ""))
     except (ValueError, TypeError):
         return default
 

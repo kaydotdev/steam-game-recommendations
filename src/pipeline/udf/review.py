@@ -1,10 +1,9 @@
-import re
 from datetime import datetime
 
 from pyspark.sql.functions import udf
 from pyspark.sql.types import BooleanType, DateType, DoubleType, IntegerType
 
-from .common import normalize_date_or_default
+from .common import normalize_date_or_default, re_first_or_default
 
 
 def parse_found_helpful_or_default(field_text: str | None, default=0) -> int:
@@ -19,16 +18,10 @@ def parse_found_helpful_or_default(field_text: str | None, default=0) -> int:
         int: Parsed 'Found helpful' value.
     """
 
-    if field_text is None:
-        return default
-
-    field_value_occurence = re.findall(r"([\d,]+) people found this review helpful", field_text)
-
-    if len(field_value_occurence) == 0:
-        return default
+    field_match = re_first_or_default(r"([\d,]+) people found this review helpful", field_text, default=str(default))
 
     try:
-        return int(field_value_occurence[0].replace(",", ""))
+        return int(field_match.replace(",", ""))
     except (ValueError, TypeError):
         return default
 
@@ -44,16 +37,10 @@ def parse_found_funny_or_default(field_text: str | None, default=0) -> int:
         int: Parsed 'Found funny' value.
     """
 
-    if field_text is None:
-        return default
-
-    field_value_occurence = re.findall(r"([\d,]+) people found this review funny", field_text)
-
-    if len(field_value_occurence) == 0:
-        return default
+    field_match = re_first_or_default(r"([\d,]+) people found this review funny", field_text, default=str(default))
 
     try:
-        return int(field_value_occurence[0].replace(",", ""))
+        return int(field_match.replace(",", ""))
     except (ValueError, TypeError):
         return default
 
@@ -69,16 +56,10 @@ def parse_hours_or_default(field_text: str | None, default=0.0) -> float:
         float: Parsed 'Hours played' value.
     """
 
-    if field_text is None:
-        return default
-
-    field_value_occurence = re.findall(r"([\d.]+) hrs on record", field_text)
-
-    if len(field_value_occurence) == 0:
-        return default
+    field_match = re_first_or_default(r"([\d.]+) hrs on record", field_text, default=str(default))
 
     try:
-        return float(field_value_occurence[0])
+        return float(field_match)
     except (ValueError, TypeError):
         return default
 
@@ -93,16 +74,10 @@ def parse_products_or_default(field_text: str | None, default=0) -> int:
         int: Parsed 'Products purchased' value.
     """
 
-    if field_text is None:
-        return default
-
-    field_value_occurence = re.findall(r"([\d,]+) products in account", field_text)
-
-    if len(field_value_occurence) == 0:
-        return default
+    field_match = re_first_or_default(r"([\d,]+) products in account", field_text, default=str(default))
 
     try:
-        return int(field_value_occurence[0].replace(",", ""))
+        return int(field_match.replace(",", ""))
     except (ValueError, TypeError):
         return default
 
@@ -117,15 +92,9 @@ def parse_date_review_or_default(field_text: str | None, default=None) -> dateti
         datetime | None: Parsed 'Date posted' value.
     """
 
-    if field_text is None:
-        return default
+    field_match = re_first_or_default('(?:<div.*?class=\"date_posted\".*?>)(.*?)(?:<\\/div>)', field_text, default=default)
 
-    field_value_occurence = re.findall('(?:<div.*?class=\"date_posted\".*?>)(.*?)(?:<\\/div>)', field_text)
-
-    if len(field_value_occurence) == 0:
-        return default
-
-    return normalize_date_or_default(field_value_occurence[0].replace("Posted: ", ""), default=default)
+    return normalize_date_or_default(field_match.replace("Posted: ", ""), default=default)
 
 
 is_recommended_udf = udf(lambda val: val == "Recommended", BooleanType())

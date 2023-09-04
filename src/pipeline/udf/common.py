@@ -1,5 +1,6 @@
+import re
 from datetime import datetime
-from typing import List
+from typing import List, Pattern
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import udf
@@ -18,6 +19,26 @@ def clean_df(df: DataFrame, columns: list) -> DataFrame:
     """
 
     return df.dropDuplicates(columns).dropna(subset=tuple(columns))
+
+def re_first_or_default(pattern: str | Pattern[str], string: str | None, default=None) -> str | None:
+    """Return first occurence of all non-overlapping matches in the string.
+    If no matches found in `string` returns `default` argument.
+
+    Args:
+        pattern (str | Pattern[str]): Regex pattern.
+        string (str | None): Input string.
+        default (Any, optional): Return value if `string` is `None` or no pattern matches found. Defaults to None.
+
+    Returns:
+        str | None: First pattern match.
+    """
+
+    if string is None:
+        return default
+
+    matches = re.findall(pattern, string)
+
+    return matches[0] if len(matches) > 0 else default
 
 def strip_or_default(val: str | None, default=None) -> str | None:
     """Strips string if value is not `None`.
