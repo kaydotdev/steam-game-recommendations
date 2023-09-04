@@ -5,7 +5,6 @@ description = "Building an open hybrid recommender system for Steam"
 authors = ["Anton Kozyriev"]
 readme = "README.md"
 packages = [
-    {include = "common", from = "src"},
     {include = "engine", from = "src"},
     {include = "insights", from = "src"},
     {include = "processing", from = "src"},
