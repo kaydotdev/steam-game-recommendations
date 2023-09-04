@@ -1,3 +1,4 @@
+import os
 import argparse
 import logging
 import pathlib
@@ -44,14 +45,19 @@ def main():
 
     parser.add_argument("--input", type=str, default=".data/dataframe_entity", help="A path to the prepared dataset directory.")
     parser.add_argument("--output", type=str, default=".data/dataframe_transformed", help="A path to the transformed dataset directory.")
+    parser.add_argument("--memory", type=str, default="45G", help="Spark driver memory size.")
     parser.add_argument("--partitions", type=int, default=48, help="Number of partitions in the output.")
 
     args = parser.parse_args()
 
+    spark_memory = os.getenv("SPARK_DRIVER_MEMORY") or args.memory
+
+    logger.info(f"Starting Spark session driver with `{spark_memory}` memory")
+
     spark = SparkSession.builder \
         .appName("Steam reviews dataset: Data transformation")\
         .master("local[*]")\
-        .config("spark.driver.memory","45G")\
+        .config("spark.driver.memory",spark_memory)\
         .config("spark.driver.maxResultSize", "0")\
         .config("spark.kryoserializer.buffer.max", "2000M")\
         .getOrCreate()
@@ -164,6 +170,7 @@ def main():
         .option("ignoreNullFields", False).mode("overwrite").save(df_users_output_path)
 
     logger.info(f"{df_users_count} `Users` entities recorded into directory `{df_users_output_path}`")
+    logger.info("Closing Spark Session")
 
     spark.stop()
 

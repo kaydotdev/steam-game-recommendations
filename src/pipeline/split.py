@@ -1,3 +1,4 @@
+import os
 import argparse
 import logging
 import pathlib
@@ -15,14 +16,19 @@ def main():
 
     parser.add_argument("--input", type=str, default=".data/dataframe", help="A path to the repartitioned dataset directory.")
     parser.add_argument("--output", type=str, default=".data/dataframe_entity", help="A path to the separated entities dataset directory.")
+    parser.add_argument("--memory", type=str, default="45G", help="Spark driver memory size.")
     parser.add_argument("--partitions", type=int, default=48, help="Number of partitions in the output.")
 
     args = parser.parse_args()
 
+    spark_memory = os.getenv("SPARK_DRIVER_MEMORY") or args.memory
+
+    logger.info(f"Starting Spark session driver with `{spark_memory}` memory")
+
     spark = SparkSession.builder \
         .appName("Steam reviews dataset: Entity spliting script")\
         .master("local[*]")\
-        .config("spark.driver.memory","45G")\
+        .config("spark.driver.memory",spark_memory)\
         .config("spark.driver.maxResultSize", "0")\
         .config("spark.kryoserializer.buffer.max", "2000M")\
         .getOrCreate()
@@ -110,6 +116,7 @@ def main():
         logger.info(f"| {entity:<9}| {count:<5} |")
 
     logger.info("+----------+-------+")
+    logger.info("Closing Spark Session")
 
     spark.stop()
 
