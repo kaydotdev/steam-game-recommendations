@@ -13,8 +13,8 @@ def main():
 
     parser = argparse.ArgumentParser(description="Util to split a repartitioned dataset into separated entities: games, pages and reviews.")
 
-    parser.add_argument("--input", type=str, default="../.data/dataframe", help="A path to the repartitioned dataset directory.")
-    parser.add_argument("--output", type=str, default="../.data/dataframe_entity", help="A path to the separated entities dataset directory.")
+    parser.add_argument("--input", type=str, default=".data/dataframe", help="A path to the repartitioned dataset directory.")
+    parser.add_argument("--output", type=str, default=".data/dataframe_entity", help="A path to the separated entities dataset directory.")
     parser.add_argument("--partitions", type=int, default=48, help="Number of partitions in the output.")
 
     args = parser.parse_args()
@@ -31,7 +31,7 @@ def main():
         logger.error(f"A dataset directory path does not exist: `{args.input}`")
         sys.exit(1)
 
-    logger.info(f"Processing repartitioned dataset at `{args.input}` into entities with `{args.partitions}` chunks per entity")
+    logger.info(f"Splitting dataset at `{args.input}` by entity type into `{args.partitions}` partitions per entity")
 
     df = spark.read.format("json").option("lines", "true").load(args.input)
     df_count = df.count()
@@ -55,7 +55,7 @@ def main():
     )
     df_game_count = df_game.count()
     df_game.coalesce(args.partitions).write.format("json")\
-        .mode("overwrite").save(df_game_path)
+        .option("ignoreNullFields", False).mode("overwrite").save(df_game_path)
 
     logger.info(f"{df_game_count} `GAME` entities recorded into directory `{df_game_path}`")
 
@@ -70,7 +70,7 @@ def main():
     )
     df_page_count = df_page.count()
     df_page.coalesce(args.partitions).write.format("json")\
-        .mode("overwrite").save(df_page_path)
+        .option("ignoreNullFields", False).mode("overwrite").save(df_page_path)
 
     logger.info(f"{df_page_count} `PAGE` entities recorded into directory `{df_page_path}`")
 
@@ -89,7 +89,7 @@ def main():
     )
     df_review_count = df_review.count()
     df_review.coalesce(args.partitions).write.format("json")\
-        .mode("overwrite").save(df_review_path)
+        .option("ignoreNullFields", False).mode("overwrite").save(df_review_path)
 
     logger.info(f"{df_review_count} `REVIEW` entities recorded into directory `{df_review_path}`")
 

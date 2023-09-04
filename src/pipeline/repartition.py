@@ -12,8 +12,8 @@ def main():
 
     parser = argparse.ArgumentParser(description="Util to repartition *.JSON lines file into chunks for faster processing.")
 
-    parser.add_argument("--input", type=str, default="../.data/raw.jl", help="A path to datafile to repartiton.")
-    parser.add_argument("--output", type=str, default="../.data/dataframe", help="A path to output repartitioned dataset.")
+    parser.add_argument("--input", type=str, default=".data/raw.jl", help="A path to datafile to repartiton.")
+    parser.add_argument("--output", type=str, default=".data/dataframe", help="A path to output repartitioned dataset.")
     parser.add_argument("--partitions", type=int, default=48, help="Number of partitions in the output.")
 
     args = parser.parse_args()
@@ -30,7 +30,7 @@ def main():
         logger.error(f"A datafile path does not exist: `{args.input}`")
         sys.exit(1)
 
-    logger.info(f"Partitioning datafile `{args.input}` into `{args.partitions}` chunks")
+    logger.info(f"Splitting datafile `{args.input}` into `{args.partitions}` partitions")
 
     df = spark.read.format("json").option("lines", "true").load(args.input)
     df.coalesce(args.partitions).write.format("json")\
