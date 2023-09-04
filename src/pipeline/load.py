@@ -30,7 +30,7 @@ def main():
     if spark_db_url is None \
             or spark_user is None \
             or spark_password is None:
-        logger.error(f"Database URL or credentials are empty. " +
+        logger.error("Database URL or credentials are empty. " +
                      "Check `SPARK_PIPELINE_DB_URL`, `SPARK_PIPELINE_DB_USER`, `SPARK_PIPELINE_DB_PASSWORD` " +
                      "environment variables or set values as arguments")
         sys.exit(1)
