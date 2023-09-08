@@ -50,7 +50,7 @@ run-pipeline-transform:
 
 .PHONY: run-pipeline-load
 # Run script for loading cleaned dataset into PostgreSQL database.
-# Set environment variables for target DB url as `SPARK_PIPELINE_DB_URL`
+# Set environment variables for database server address as `SPARK_PIPELINE_DB_HOSTNAME`, database name as `SPARK_PIPELINE_DB_NAME`
 # and authentication credentials as `SPARK_PIPELINE_DB_USER` and `SPARK_PIPELINE_DB_PASSWORD`
 # before running this command.
 run-pipeline-load:
@@ -58,7 +58,7 @@ run-pipeline-load:
 
 .PHONY: etl
 # Run ETL pipeline for webcrawled data
-# Set environment variables for target DB url as `SPARK_PIPELINE_DB_URL`
+# Set environment variables for database server address as `SPARK_PIPELINE_DB_HOSTNAME`, database name as `SPARK_PIPELINE_DB_NAME`
 # and authentication credentials as `SPARK_PIPELINE_DB_USER` and `SPARK_PIPELINE_DB_PASSWORD`
 # before running this command.
 etl: run-pipeline-repartition run-pipeline-split run-pipeline-transform run-pipeline-load

@@ -29,6 +29,7 @@ optional = true
 
 [tool.poetry.group.pipeline.dependencies]
 pyspark = "3.1.1"
+psycopg = {extras = ["binary"], version = "^3.1.10"}
 
 [tool.poetry.group.pipeline]
 optional = true

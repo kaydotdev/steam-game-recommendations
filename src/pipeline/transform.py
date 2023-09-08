@@ -9,8 +9,8 @@ from pyspark.sql.functions import array, col
 
 from pipeline.udf.common import (
     clean_df,
+    joined_strip_list_udf,
     normalize_date_udf,
-    strip_list_udf,
     strip_udf,
     to_int_udf,
 )
@@ -38,7 +38,7 @@ from pipeline.udf.review import (
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format="(%(asctime)s) [%(levelname)s]: %(message)s.")
+    logging.basicConfig(level=logging.INFO, format="(%(asctime)s) [%(levelname)s]: %(message)s")
     logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description="Util to clean and transform prepared dataset.")
@@ -95,7 +95,7 @@ def main():
     df_page_cleaned = clean_df(df_pages, ["app_id"]).select(
         to_int_udf(col("app_id")).alias("app_id"),
         strip_udf(col("description")).alias("description"),
-        strip_list_udf(col("tags")).alias("tags")
+        joined_strip_list_udf(col("tags")).alias("tags")
     )
 
     df_game_joined = clean_df(df_games_cleaned.alias("df_games").join(

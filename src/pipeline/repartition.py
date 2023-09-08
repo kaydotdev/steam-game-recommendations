@@ -8,7 +8,7 @@ from pyspark.sql import SparkSession
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format="(%(asctime)s) [%(levelname)s]: %(message)s.")
+    logging.basicConfig(level=logging.INFO, format="(%(asctime)s) [%(levelname)s]: %(message)s")
     logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description="Util to repartition *.JSON lines file into chunks for faster processing.")

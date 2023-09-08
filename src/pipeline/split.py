@@ -9,7 +9,7 @@ from pyspark.sql.functions import col
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format="(%(asctime)s) [%(levelname)s]: %(message)s.")
+    logging.basicConfig(level=logging.INFO, format="(%(asctime)s) [%(levelname)s]: %(message)s")
     logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description="Util to split a repartitioned dataset into separated entities: games, pages and reviews.")
