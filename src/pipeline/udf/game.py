@@ -2,7 +2,13 @@ import math
 import re
 
 from pyspark.sql.functions import udf
-from pyspark.sql.types import BooleanType, DoubleType, IntegerType, StringType
+from pyspark.sql.types import (
+    ArrayType,
+    BooleanType,
+    DoubleType,
+    IntegerType,
+    StringType,
+)
 
 from .common import cast_or_default, re_first_or_default
 
@@ -140,4 +146,8 @@ pricing_udf = udf(lambda val: parse_pricing_or_default(val), DoubleType())
 original_price_udf = udf(lambda val: parse_original_price_or_default(val), DoubleType())
 steam_deck_udf = udf(lambda val: val == "true", BooleanType())
 calculate_discount_udf = udf(lambda arr: calculate_discount(arr), IntegerType())
+
+replace_escape_chr_udf = udf(lambda x: x.replace('"', "'"), StringType())
+description_udf = udf(lambda x: x if x is not None else "", StringType())
+deserialize_tags_udf = udf(lambda x: x.split("|") if x is not None else [], ArrayType(StringType()))
 

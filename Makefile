@@ -63,3 +63,11 @@ run-pipeline-load:
 # before running this command.
 etl: run-pipeline-repartition run-pipeline-split run-pipeline-transform run-pipeline-load
 
+.PHONY: dump
+# Run script to dump collected data from a PostgreSQL tables into dedicated CSV files.
+# Set environment variables for database server address as `SPARK_PIPELINE_DB_HOSTNAME`, database name as `SPARK_PIPELINE_DB_NAME`
+# and authentication credentials as `SPARK_PIPELINE_DB_USER` and `SPARK_PIPELINE_DB_PASSWORD`
+# before running this command.
+dump:
+	cd src; poetry run python -m pipeline.dump
+
