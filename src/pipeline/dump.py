@@ -29,7 +29,7 @@ def dump_table(df: DataFrame, output_dir: str, entity_name: str, fmt="csv"):
         fmt (str, optional): The format in which the file will be saved. Defaults to "csv".
 
     Raises:
-        IOError: If the data file does not exist in the temporary directory after saving.
+        OSError: If the data file does not exist in the temporary directory after saving.
     """
 
     df_output_dir = os.path.join(output_dir, entity_name)
