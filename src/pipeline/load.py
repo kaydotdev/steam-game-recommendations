@@ -31,6 +31,7 @@ def main():
     parser.add_argument("-n", "--db-name", type=str, help="The name of the PostgreSQL database.")
     parser.add_argument("-u", "--user", type=str, help="The username used to authenticate.")
     parser.add_argument("-p", "--password", type=str, help="Password used to authenticate.")
+    parser.add_argument("-U", "--update", type=bool, default=False, help="Update fields for existing records or skip them.")
 
     args = parser.parse_args()
 
@@ -158,7 +159,12 @@ def main():
         logger.info("Loading to the `master` tables and deleting `append` tables")
 
         with conn.transaction():
-            append_script_path = os.path.join(script_path_dir, "sql", "append.sql")
+            if args.update:
+                logger.debug("Updating fields for existing records")
+                append_script_path = os.path.join(script_path_dir, "sql", "update.sql")
+            else:
+                logger.debug("Ignoring updates for existing records")
+                append_script_path = os.path.join(script_path_dir, "sql", "append.sql")
 
             with open(append_script_path) as file:
                 cur.execute(file.read())
