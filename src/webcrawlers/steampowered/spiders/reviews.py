@@ -6,25 +6,31 @@ from scrapy.selector import Selector
 
 
 class GameswithReviewsSpider(scrapy.Spider):
-    name = "gameswithreviews"
+    name = "reviews"
     allowed_domains = ["store.steampowered.com", "steamcommunity.com"]
 
-    def __init__(self, games_number=134664, games_per_page=50, *args, **kwargs):
+    def __init__(self, games_per_page=50, *args, **kwargs):
         super(GameswithReviewsSpider).__init__(*args, **kwargs)
 
-        self.games_number = games_number
         self.games_per_page = games_per_page
-        self.pages_number = games_number // games_per_page
 
     def start_requests(self):
+        # First, we ping the end server to get the total number of available games
+        yield scrapy.Request("https://store.steampowered.com/search/results/?query&start=0&count=50&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english")
+
+    def parse(self, response):
+        raw_games_number_value = json.loads(response.text).get("total_count")
+        games_number = int(self.cast_or_default(raw_games_number_value, int, default=0))
+        pages_number = games_number // self.games_per_page
+
         user_agent = self.settings.attributes.get("USER_AGENT")
         user_agent_val = user_agent.value if user_agent is not None else "None"
 
         self.logger.info(f"Using 'USER-AGENT' from settings: {user_agent_val}")
-        self.logger.info(f"Crawling {self.pages_number} pages ({self.games_per_page} games per page, {self.games_number} games in total)")
+        self.logger.info(f"Crawling {pages_number} pages ({self.games_per_page} games per page, {games_number} games in total)")
 
-        for i in range(self.pages_number):
-            yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start={self.games_per_page * i}&count={self.games_per_page}&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us")
+        for i in range(pages_number):
+            yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start={self.games_per_page * i}&count={self.games_per_page}&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english", callback=self.parse_items)
 
     @staticmethod
     def cast_or_default(val, to_type, default=None):
@@ -33,7 +39,7 @@ class GameswithReviewsSpider(scrapy.Spider):
         except (ValueError, TypeError):
             return default
 
-    def parse(self, response):
+    def parse_items(self, response):
         for item in Selector(text=json.loads(response.text).get("results_html")).css("a"):
             app_id = self.cast_or_default(item.css("::attr(data-ds-appid)").get(), int)
             app_href = item.css("::attr(href)").get()
@@ -45,7 +51,7 @@ class GameswithReviewsSpider(scrapy.Spider):
                 "type": "game",
                 "content": {
                     "app_id": app_id,
-                    "tag_ids": [int(x) for x in json.loads(tag_ids)] if tag_ids is not None else [],
+                    "tag_ids": [self.cast_or_default(x, int, default=0) for x in json.loads(tag_ids)] if tag_ids is not None else [],
                     "app_href": app_href,
                     "img_href": item.css("div.col.search_capsule img::attr(src)").get(),
                     "title": item.css("span.title::text").get(),

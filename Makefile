@@ -1,9 +1,12 @@
 .PHONY: clean
 # Remove all processing artifacts, build files and cache files
-clean:
-	rm -f poetry.lock
+clean: clean-data
 	rm -rf .ruff_cache/ .pytest_cache/
 	find . -type d -name '__pycache__' -exec rm -rf {} +
+
+.PHONY: clean-data
+# Remove all crawled data
+clean-data:
 	find . -type d -name '.data' -exec rm -rf {} +
 
 .PHONY: lint
@@ -31,7 +34,7 @@ crawl:
 		LOG_TARGET="/dev/null"; \
 	fi; \
 	cd src/webcrawlers && \
-		nohup poetry run scrapy crawl gameswithreviews -o "../.data/raw.jl" > "$$LOG_TARGET" 2>&1 &
+		nohup poetry run scrapy crawl reviews -o "../.data/raw.jl" > "$$LOG_TARGET" 2>&1 &
 
 .PHONY: run-pipeline-repartition
 # Run script for webcrawled data repartition
