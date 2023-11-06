@@ -74,3 +74,9 @@ etl: run-pipeline-repartition run-pipeline-split run-pipeline-transform run-pipe
 dump:
 	cd src; poetry run python -m pipeline.dump
 
+.PHONY: requirements
+# Write or update all Poetry packages into separate `requirements.txt` files for each environment.
+requirements:
+	poetry export -f requirements.txt --only webcrawl --without-hashes --without-urls --output requirements-webcrawl.txt
+	poetry export -f requirements.txt --only pipeline --without-hashes --without-urls --output requirements-pipeline.txt
+
