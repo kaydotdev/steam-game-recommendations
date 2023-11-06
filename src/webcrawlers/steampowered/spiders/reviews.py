@@ -1,5 +1,5 @@
 import json
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import scrapy
 from scrapy.selector import Selector
@@ -9,10 +9,11 @@ class GameswithReviewsSpider(scrapy.Spider):
     name = "reviews"
     allowed_domains = ["store.steampowered.com", "steamcommunity.com"]
 
-    def __init__(self, games_per_page=50, *args, **kwargs):
+    def __init__(self, games_per_page=50, only_games=False, *args, **kwargs):
         super(GameswithReviewsSpider).__init__(*args, **kwargs)
 
         self.games_per_page = games_per_page
+        self.only_games = only_games
 
     def start_requests(self):
         # First, we ping the end server to get the total number of available games
@@ -65,8 +66,21 @@ class GameswithReviewsSpider(scrapy.Spider):
                 }
             }
 
-            if app_id is not None:
-                yield scrapy.Request(f"{app_href}?l=english&cc=us", cb_kwargs={ "app_id": app_id }, callback=self.parse_page)
+            if app_id is not None and not self.only_games:
+                app_url = urlparse(app_href)
+                app_url_query_params = parse_qs(app_url.query)
+
+                app_url_query_params["l"] = ["english"]
+                app_url_query_params["cc"] = ["us"]
+
+                query_with_locale = urlencode(app_url_query_params, doseq=True)
+                app_page_url = urlunparse((
+                    app_url.scheme, app_url.netloc,
+                    app_url.path, app_url.params,
+                    query_with_locale, app_url.fragment
+                ))
+
+                yield scrapy.Request(app_page_url, cb_kwargs={ "app_id": app_id }, callback=self.parse_page)
                 yield scrapy.Request(f"https://steamcommunity.com/app/{app_id}/reviews/?browsefilter=toprated&snr=1_5_100010_&filterLanguage=english&l=english", cb_kwargs={ "app_id": app_id }, callback=self.parse_review)
 
     def parse_page(self, response, **kwargs):
@@ -101,8 +115,15 @@ class GameswithReviewsSpider(scrapy.Spider):
         next_page = response.css("form[id*='MoreContentForm']::attr(action)").get()
 
         if next_page is not None:
+            next_page_url = urlparse(next_page)
             next_page_data = { form_val.css("::attr(name)").get(): form_val.css("::attr(value)").get() for form_val in response.css("form[id*='MoreContentForm'] input") }
-            next_page_url = next_page + "?" + urlencode(next_page_data)
+
+            next_page_query = urlencode(next_page_data, doseq=True)
+            next_page_url = urlunparse((
+                next_page_url.scheme, next_page_url.netloc,
+                next_page_url.path, next_page_url.params,
+                next_page_query, next_page_url.fragment
+            ))
 
             yield scrapy.Request(next_page_url, cb_kwargs={ "app_id": kwargs.get("app_id") }, callback=self.parse_review)
 
