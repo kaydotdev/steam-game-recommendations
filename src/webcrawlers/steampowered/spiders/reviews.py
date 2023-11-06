@@ -1,4 +1,5 @@
 import json
+from distutils.util import strtobool
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import scrapy
@@ -9,11 +10,12 @@ class GameswithReviewsSpider(scrapy.Spider):
     name = "reviews"
     allowed_domains = ["store.steampowered.com", "steamcommunity.com"]
 
-    def __init__(self, games_per_page=50, only_games=False, *args, **kwargs):
-        super(GameswithReviewsSpider).__init__(*args, **kwargs)
+    def __init__(self, skip_games=0, games_per_page=50, only_games=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self.games_per_page = games_per_page
-        self.only_games = only_games
+        self.skip_games = int(skip_games)
+        self.games_per_page = int(games_per_page)
+        self.only_games = bool(strtobool(only_games)) if isinstance(only_games, str) else bool(only_games)
 
     def start_requests(self):
         # First, we ping the end server to get the total number of available games
@@ -22,6 +24,8 @@ class GameswithReviewsSpider(scrapy.Spider):
     def parse(self, response):
         raw_games_number_value = json.loads(response.text).get("total_count")
         games_number = int(self.cast_or_default(raw_games_number_value, int, default=0))
+
+        skip_pages_number = self.skip_games // self.games_per_page
         pages_number = games_number // self.games_per_page
 
         user_agent = self.settings.attributes.get("USER_AGENT")
@@ -29,8 +33,9 @@ class GameswithReviewsSpider(scrapy.Spider):
 
         self.logger.info(f"Using 'USER-AGENT' from settings: {user_agent_val}")
         self.logger.info(f"Crawling {pages_number} pages ({self.games_per_page} games per page, {games_number} games in total)")
+        self.logger.info(f"Skipping {skip_pages_number} pages ({self.skip_games} games)")
 
-        for i in range(pages_number):
+        for i in range(skip_pages_number, pages_number):
             yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start={self.games_per_page * i}&count={self.games_per_page}&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english", callback=self.parse_items)
 
     @staticmethod
