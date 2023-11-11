@@ -10,16 +10,17 @@ class GameswithReviewsSpider(scrapy.Spider):
     name = "reviews"
     allowed_domains = ["store.steampowered.com", "steamcommunity.com"]
 
-    def __init__(self, skip_games=0, games_per_page=50, only_games=False, *args, **kwargs):
+    def __init__(self, skip_games=0, games_per_page=50, only_games=False, filter_language=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.filter_language = filter_language or "all"
         self.skip_games = int(skip_games)
         self.games_per_page = int(games_per_page)
         self.only_games = bool(strtobool(only_games)) if isinstance(only_games, str) else bool(only_games)
 
     def start_requests(self):
         # First, we ping the end server to get the total number of available games
-        yield scrapy.Request("https://store.steampowered.com/search/results/?query&start=0&count=50&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english")
+        yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start=0&count={self.games_per_page}&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english")
 
     def parse(self, response):
         raw_games_number_value = json.loads(response.text).get("total_count")
@@ -86,7 +87,7 @@ class GameswithReviewsSpider(scrapy.Spider):
                 ))
 
                 yield scrapy.Request(app_page_url, cb_kwargs={ "app_id": app_id }, callback=self.parse_page)
-                yield scrapy.Request(f"https://steamcommunity.com/app/{app_id}/reviews/?browsefilter=toprated&snr=1_5_100010_&filterLanguage=english&l=english", cb_kwargs={ "app_id": app_id }, callback=self.parse_review)
+                yield scrapy.Request(f"https://steamcommunity.com/app/{app_id}/reviews/?browsefilter=toprated&snr=1_5_100010_&filterLanguage={self.filter_language}&l=english", cb_kwargs={ "app_id": app_id }, callback=self.parse_review)
 
     def parse_page(self, response, **kwargs):
         page_content = response.css("#game_highlights")
