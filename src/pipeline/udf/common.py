@@ -20,6 +20,7 @@ def clean_df(df: DataFrame, columns: list) -> DataFrame:
 
     return df.dropDuplicates(columns).dropna(subset=tuple(columns))
 
+
 def cast_or_default(_type: Type, value: Any, default=None) -> Any | None:
     """Converts input `value` to `_type`. If cast fails, returns `default` argument.
 
@@ -37,7 +38,10 @@ def cast_or_default(_type: Type, value: Any, default=None) -> Any | None:
     except (ValueError, TypeError):
         return default
 
-def re_first_or_default(pattern: str | Pattern[str], string: str | None, default=None) -> str | None:
+
+def re_first_or_default(
+    pattern: str | Pattern[str], string: str | None, default=None
+) -> str | None:
     """Return first occurence of all non-overlapping matches in the string.
     If no matches found in `string` returns `default` argument.
 
@@ -57,6 +61,7 @@ def re_first_or_default(pattern: str | Pattern[str], string: str | None, default
 
     return matches[0] if len(matches) > 0 else default
 
+
 def strip_or_default(val: str | None, default=None) -> str | None:
     """Strips string if value is not `None`.
     Otherwise returns default argument.
@@ -70,6 +75,7 @@ def strip_or_default(val: str | None, default=None) -> str | None:
     """
 
     return val.strip() if val is not None else default
+
 
 def strip_list_or_default(val: List[str] | None, default=None) -> List[str] | None:
     """Strips each element of a list if value is not `None` and not empty.
@@ -88,6 +94,7 @@ def strip_list_or_default(val: List[str] | None, default=None) -> List[str] | No
 
     return [el.strip() for el in val]
 
+
 def join_strip_list_or_default(val: List[str] | None, default=None) -> str | None:
     """Strips each element of a list and joins elements with `|` character.
     If value is `None` or empty, then returns default argument.
@@ -103,6 +110,7 @@ def join_strip_list_or_default(val: List[str] | None, default=None) -> str | Non
     stripped_list = strip_list_or_default(val, default=default)
 
     return "|".join(stripped_list) if stripped_list is not None else default
+
 
 def normalize_date_or_default(text: str | None, default=None) -> datetime | None:
     """Parses date from string with formats [`%b %d, %Y`, `%b %Y`, `%B %d, %Y`].
@@ -127,7 +135,10 @@ def normalize_date_or_default(text: str | None, default=None) -> datetime | None
 
     return default
 
-def format_date_or_default(text: str | None, out_fmt="%Y-%m-%d", default=None) -> str | None:
+
+def format_date_or_default(
+    text: str | None, out_fmt="%Y-%m-%d", default=None
+) -> str | None:
     """Parses date from string and then converts to the common ISO format.
     If date parse fails, returns `default`. Input acceptable formats are [`%b %d, %Y`, `%b %Y`, `%B %d, %Y`].
 
@@ -151,4 +162,3 @@ strip_list_udf = udf(lambda val: strip_list_or_default(val), ArrayType(StringTyp
 joined_strip_list_udf = udf(lambda val: join_strip_list_or_default(val), StringType())
 normalize_date_udf = udf(lambda val: normalize_date_or_default(val), DateType())
 format_date_udf = udf(lambda val: format_date_or_default(val), StringType())
-

@@ -26,6 +26,7 @@ def parse_title_or_default(title: str | None, default=None) -> str | None:
 
     return title.strip().replace(",", "") if title is not None else default
 
+
 def parse_rating_or_default(rating: str | None, default=None) -> str | None:
     """Parses 'Rating' raw HTML field from the game page profile.
 
@@ -39,7 +40,10 @@ def parse_rating_or_default(rating: str | None, default=None) -> str | None:
 
     return rating.split("<br>")[0].strip() if rating is not None else default
 
-def parse_positive_ratio_or_default(positive_ratio: str | None, default=None) -> int | None:
+
+def parse_positive_ratio_or_default(
+    positive_ratio: str | None, default=None
+) -> int | None:
     """Parses 'Positive reviews ratio' raw HTML field from the game page profile.
     Returns the percentage value as an `integer`.
 
@@ -55,7 +59,10 @@ def parse_positive_ratio_or_default(positive_ratio: str | None, default=None) ->
 
     return cast_or_default(int, field_match.strip(), default=default)
 
-def parse_reviews_number_or_default(reviews_number: str | None, default=None) -> int | None:
+
+def parse_reviews_number_or_default(
+    reviews_number: str | None, default=None
+) -> int | None:
     """Parses 'User reviews' raw HTML field from the game page profile.
 
     Args:
@@ -66,9 +73,12 @@ def parse_reviews_number_or_default(reviews_number: str | None, default=None) ->
         int | None: Parsed 'User reviews' value.
     """
 
-    field_match = re_first_or_default(r"the ([\d,]+) user", reviews_number, default=default)
+    field_match = re_first_or_default(
+        r"the ([\d,]+) user", reviews_number, default=default
+    )
 
     return cast_or_default(int, field_match.strip().replace(",", ""), default=default)
+
 
 def parse_pricing_or_default(pricing: str | None, default=None) -> float | None:
     """Parses 'Pricing' raw HTML field from the game page profile. Price value is displayed in `$`.
@@ -86,6 +96,7 @@ def parse_pricing_or_default(pricing: str | None, default=None) -> float | None:
     except (ValueError, TypeError):
         return default
 
+
 def parse_original_price_or_default(original_price: str | None, default=0.0) -> float:
     """Parses 'Original price' raw HTML field from the game page profile. Price value is displayed in `$`.
 
@@ -100,10 +111,15 @@ def parse_original_price_or_default(original_price: str | None, default=0.0) -> 
     if original_price is None:
         return default
 
-    parsed_price = original_price.replace('<div class="col search_price responsive_secondrow">', "")\
-        .replace('<div class="col search_price  responsive_secondrow">', "")\
-        .replace('<div class="col search_price discounted responsive_secondrow">', "")\
-        .replace("</div>", "").strip()
+    parsed_price = (
+        original_price.replace(
+            '<div class="col search_price responsive_secondrow">', ""
+        )
+        .replace('<div class="col search_price  responsive_secondrow">', "")
+        .replace('<div class="col search_price discounted responsive_secondrow">', "")
+        .replace("</div>", "")
+        .strip()
+    )
 
     if "Free" in parsed_price:
         return default
@@ -113,6 +129,7 @@ def parse_original_price_or_default(original_price: str | None, default=0.0) -> 
         return cast_or_default(float, extracted_price.strip(), default=default)
 
     return cast_or_default(float, parsed_price.replace("$", ""), default=default)
+
 
 def calculate_discount(args: list) -> float | None:
     """Calculates discount from aggregated columns of `final` and `original` game price.
@@ -140,8 +157,12 @@ is_linux_udf = udf(lambda val: "linux" in val, BooleanType())
 
 strip_title_udf = udf(lambda val: parse_title_or_default(val), StringType())
 rating_udf = udf(lambda val: parse_rating_or_default(val), StringType())
-positive_ratio_udf = udf(lambda val: parse_positive_ratio_or_default(val), IntegerType())
-reviews_number_udf = udf(lambda val: parse_reviews_number_or_default(val), IntegerType())
+positive_ratio_udf = udf(
+    lambda val: parse_positive_ratio_or_default(val), IntegerType()
+)
+reviews_number_udf = udf(
+    lambda val: parse_reviews_number_or_default(val), IntegerType()
+)
 pricing_udf = udf(lambda val: parse_pricing_or_default(val), DoubleType())
 original_price_udf = udf(lambda val: parse_original_price_or_default(val), DoubleType())
 steam_deck_udf = udf(lambda val: val == "true", BooleanType())
@@ -149,5 +170,6 @@ calculate_discount_udf = udf(lambda arr: calculate_discount(arr), IntegerType())
 
 replace_escape_chr_udf = udf(lambda x: x.replace('"', "'"), StringType())
 description_udf = udf(lambda x: x if x is not None else "", StringType())
-deserialize_tags_udf = udf(lambda x: x.split("|") if x is not None else [], ArrayType(StringType()))
-
+deserialize_tags_udf = udf(
+    lambda x: x.split("|") if x is not None else [], ArrayType(StringType())
+)
