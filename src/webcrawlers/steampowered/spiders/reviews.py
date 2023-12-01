@@ -18,11 +18,24 @@ class GameswithReviewsSpider(scrapy.Spider):
         self.games_per_page = int(games_per_page)
         self.only_games = bool(strtobool(only_games)) if isinstance(only_games, str) else bool(only_games)
 
-    def start_requests(self):
-        # First, we ping the end server to get the total number of available games
-        yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start=0&count={self.games_per_page}&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english")
+    @staticmethod
+    def cast_or_default(val, to_type, default=None):
+        try:
+            return to_type(val)
+        except (ValueError, TypeError):
+            return default
 
-    def parse(self, response):
+    def start_requests(self):
+        yield scrapy.Request("https://store.steampowered.com/search/?category1=998&ndl=1&ignore_preferences=1&cc=us&l=english", callback=self.parse_search_params)
+
+    def parse_search_params(self, response):
+        snr = response.css("#hidden_searchform_elements #search_snr_value::attr(value)").get()
+        self.logger.info(f"Extracted a fresh SNR mark: {snr}")
+
+        yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start=0&count={self.games_per_page}&dynamic_data=&category1=998&sort_by=_ASC&snr={snr}&infinite=1&cc=us&l=english", cb_kwargs={ "snr": snr })
+
+    def parse(self, response, **kwargs):
+        snr = kwargs.get("snr")
         raw_games_number_value = json.loads(response.text).get("total_count")
         games_number = int(self.cast_or_default(raw_games_number_value, int, default=0))
 
@@ -37,16 +50,12 @@ class GameswithReviewsSpider(scrapy.Spider):
         self.logger.info(f"Skipping {skip_pages_number} pages ({self.skip_games} games)")
 
         for i in range(skip_pages_number, pages_number):
-            yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start={self.games_per_page * i}&count={self.games_per_page}&dynamic_data=&sort_by=_ASC&snr=1_7_7_230_7&infinite=1&cc=us&l=english", callback=self.parse_items)
+            yield scrapy.Request(f"https://store.steampowered.com/search/results/?query&start={self.games_per_page * i}&count={self.games_per_page}&dynamic_data=&category1=998&sort_by=_ASC&snr={snr}&infinite=1&cc=us&l=english",
+                                 callback=self.parse_items, cb_kwargs={ "snr": snr })
 
-    @staticmethod
-    def cast_or_default(val, to_type, default=None):
-        try:
-            return to_type(val)
-        except (ValueError, TypeError):
-            return default
+    def parse_items(self, response, **kwargs):
+        snr = kwargs.get("snr")
 
-    def parse_items(self, response):
         for item in Selector(text=json.loads(response.text).get("results_html")).css("a"):
             app_id = self.cast_or_default(item.css("::attr(data-ds-appid)").get(), int)
             app_href = item.css("::attr(href)").get()
@@ -87,7 +96,7 @@ class GameswithReviewsSpider(scrapy.Spider):
                 ))
 
                 yield scrapy.Request(app_page_url, cb_kwargs={ "app_id": app_id }, callback=self.parse_page)
-                yield scrapy.Request(f"https://steamcommunity.com/app/{app_id}/reviews/?browsefilter=toprated&snr=1_5_100010_&filterLanguage={self.filter_language}&l=english", cb_kwargs={ "app_id": app_id }, callback=self.parse_review)
+                yield scrapy.Request(f"https://steamcommunity.com/app/{app_id}/reviews/?browsefilter=toprated&snr={snr}&filterLanguage={self.filter_language}&l=english", cb_kwargs={ "app_id": app_id }, callback=self.parse_review)
 
     def parse_page(self, response, **kwargs):
         page_content = response.css("#game_highlights")
