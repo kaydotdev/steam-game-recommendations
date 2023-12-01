@@ -252,8 +252,11 @@ dmypy.json
 # Streamlit configs
 .streamlit/
 
-# intermediate data in ETL
+# Intermediate data in ETL
 .data/
+
+# Projects packaging artifacts
+*.zip
 
 ### venv ###
 # Virtualenv

@@ -2,6 +2,7 @@
 # Remove all processing artifacts, build files and cache files
 clean: clean-data
 	rm -rf .ruff_cache/ .pytest_cache/
+	find . -type f -name '*.zip' -exec rm {} +
 	find . -type d -name '__pycache__' -exec rm -rf {} +
 
 .PHONY: clean-data
@@ -41,6 +42,13 @@ crawl:
 	fi; \
 	cd src/webcrawlers && \
 		nohup scrapy crawl reviews -o "../.data/raw.jl" > "$$LOG_TARGET" 2>&1 &
+
+.PHONY: zip-crawler
+# Compresses web crawler scripts into a '*.zip' file for execution in a virtual environment
+zip-crawler:
+	@which zip >/dev/null || (echo "`zip` utility not found" && exit 1)
+	cd src/webcrawlers; zip -r -9  ../../webcrawler.zip . -x "steampowered/__pycache__/*" \
+														  -x "steampowered/spiders/__pycache__/*"
 
 .PHONY: run-pipeline-repartition
 # Run script for webcrawled data repartition
