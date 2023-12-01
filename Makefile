@@ -83,6 +83,5 @@ dump:
 .PHONY: requirements
 # Write or update all Poetry packages into separate `requirements.txt` files for each environment.
 requirements:
-	poetry export -f requirements.txt --only webcrawl --without-hashes --without-urls --output requirements-webcrawl.txt
-	poetry export -f requirements.txt --only pipeline --without-hashes --without-urls --output requirements-pipeline.txt
-
+	poetry export -f requirements.txt --only webcrawl --without-hashes --without-urls --output ./src/webcrawlers/requirements.txt
+	poetry export -f requirements.txt --only pipeline --without-hashes --without-urls --output ./src/pipeline/requirements.txt
