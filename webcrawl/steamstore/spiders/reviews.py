@@ -1,5 +1,6 @@
-import scrapy
 import urllib.parse as urltools
+
+import scrapy
 
 from .games import GamesSpider
 
@@ -28,7 +29,7 @@ class ReviewsSpider(GamesSpider):
 
             yield scrapy.Request(
                 f"https://steamcommunity.com/app/{app_id}/reviews/?snr={snr_mark}&filterLanguage={self.filter_language}"
-                f"&l=english",
+                "&l=english",
                 cb_kwargs={"app_id": app_id},
                 callback=self.parse_review,
             )
@@ -75,16 +76,14 @@ class ReviewsSpider(GamesSpider):
             }
 
             next_page_query = urltools.urlencode(next_page_data, doseq=True)
-            next_page_url = urltools.urlunparse(
-                (
-                    next_page_url.scheme,
-                    next_page_url.netloc,
-                    next_page_url.path,
-                    next_page_url.params,
-                    next_page_query,
-                    next_page_url.fragment,
-                )
-            )
+            next_page_url = urltools.urlunparse((
+                next_page_url.scheme,
+                next_page_url.netloc,
+                next_page_url.path,
+                next_page_url.params,
+                next_page_query,
+                next_page_url.fragment,
+            ))
 
             yield scrapy.Request(
                 next_page_url, cb_kwargs=kwargs, callback=self.parse_review

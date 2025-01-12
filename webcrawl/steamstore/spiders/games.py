@@ -1,10 +1,10 @@
-import math
 import json
-import scrapy
+import math
 import urllib.parse as urltools
 
-from scrapy.selector import Selector
+import scrapy
 from scrapy.exceptions import CloseSpider
+from scrapy.selector import Selector
 
 
 class GamesSpider(scrapy.Spider):
@@ -56,7 +56,7 @@ class GamesSpider(scrapy.Spider):
                 yield scrapy.Request(
                     f"https://store.steampowered.com/search/results/?query&start={self.per_page * page_id}&"
                     f"count={self.per_page}&category1=998&ndl=1&ignore_preferences=1&sort_by=_ASC&snr={search_snr}&"
-                    f"infinite=1&l=english&cc=us",
+                    "infinite=1&l=english&cc=us",
                     callback=self.parse,
                     cb_kwargs={"snr": search_snr},
                 )
@@ -75,7 +75,7 @@ class GamesSpider(scrapy.Spider):
             yield scrapy.Request(
                 f"https://store.steampowered.com/search/results/?query&start={self.per_page * page_id}&"
                 f"count={self.per_page}&category1=998&ndl=1&ignore_preferences=1&sort_by=_ASC&snr={kwargs.get('snr')}&"
-                f"infinite=1&l=english&cc=us",
+                "infinite=1&l=english&cc=us",
                 callback=self.parse,
                 cb_kwargs={"snr": kwargs.get("snr")},
             )
@@ -87,27 +87,23 @@ class GamesSpider(scrapy.Spider):
             app_href = item.css("::attr(href)").get()
             app_url = urltools.urlparse(app_href)
             app_url_params = urltools.parse_qs(app_url.query)
-            app_url_params.update(
-                {
-                    "cc": ["us"],
-                    "l": ["english"],
-                    "category1": ["998"],
-                    "ndl": ["1"],
-                    "ignore_preferences": ["1"],
-                    "snr": [kwargs.get("snr")],
-                }
-            )
+            app_url_params.update({
+                "cc": ["us"],
+                "l": ["english"],
+                "category1": ["998"],
+                "ndl": ["1"],
+                "ignore_preferences": ["1"],
+                "snr": [kwargs.get("snr")],
+            })
             app_url_query = urltools.urlencode(app_url_params, doseq=True)
-            app_url_updated = urltools.urlunparse(
-                (
-                    app_url.scheme,
-                    app_url.netloc,
-                    app_url.path,
-                    app_url.params,
-                    app_url_query,
-                    app_url.fragment,
-                )
-            )
+            app_url_updated = urltools.urlunparse((
+                app_url.scheme,
+                app_url.netloc,
+                app_url.path,
+                app_url.params,
+                app_url_query,
+                app_url.fragment,
+            ))
 
             yield scrapy.Request(app_url_updated, callback=self.parse_game_card)
 
@@ -143,7 +139,8 @@ class GamesSpider(scrapy.Spider):
                 for product in products_info
             ],
             "rating": response.css(
-                "#userReviews .user_reviews_summary_row:last-child::attr(data-tooltip-html)"
+                "#userReviews"
+                " .user_reviews_summary_row:last-child::attr(data-tooltip-html)"
             ).get(),
             "developer": developer_info.css(".summary#developers_list").get(),
             "publisher": developer_info.css(".summary:not(#developers_list)").get(),
