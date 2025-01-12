@@ -14,8 +14,13 @@ pytest = "^7.4.3"
 black = "^23.11.0"
 ruff = "^0.1.5"
 
+[tool.poetry.group.webcrawl.dependencies]
+scrapy = "^2.12.0"
+
+[tool.poetry.group.webcrawl]
+optional = true
+
 [tool.poetry.group.processing.dependencies]
-scrapy = "^2.10.0"
 pyspark = "3.5.2"
 
 [tool.poetry.group.processing]
@@ -28,7 +33,7 @@ preview = true
 
 [tool.ruff]
 select = ["A", "B", "C4", "E", "EM", "F", "I001", "Q", "UP"]
-ignore = ["B008", "E501", "EM101", "EM102", "C417"]
+ignore = ["B008", "E501", "EM101", "EM102", "C417", "UP008", "UP028"]
 
 [tool.pytest.ini_options]
 minversion = 7.4
