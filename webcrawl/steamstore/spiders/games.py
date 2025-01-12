@@ -105,11 +105,14 @@ class GamesSpider(scrapy.Spider):
                 app_url.fragment,
             ))
 
-            yield scrapy.Request(app_url_updated, callback=self.parse_game_card)
+            yield scrapy.Request(
+                app_url_updated,
+                callback=self.parse_game_card,
+                cb_kwargs={"snr": kwargs.get("snr")},
+            )
 
-    def parse_game_card(self, response):
+    def parse_game_card(self, response, **kwargs):
         developer_info = response.css("#game_highlights .dev_row")
-        products_info = response.css(".game_area_purchase > div")
         app_id = response.css("*[data-appid]::attr(data-appid)").get()
 
         self.logger.info(f"Parsing the game page with id={app_id}")
@@ -123,21 +126,7 @@ class GamesSpider(scrapy.Spider):
             "date_release": response.css(
                 "#game_highlights .release_date .date::text"
             ).get(),
-            "products": [
-                {
-                    "name": product.css("h1::text").get(),
-                    "platforms": [
-                        platform.replace("platform_img ", "")
-                        for platform in product.css(
-                            ".game_area_purchase_platform span::attr(class)"
-                        ).getall()
-                    ],
-                    "price": product.css(
-                        ".game_purchase_action div[data-price-final]::attr(aria-label)"
-                    ).get(),
-                }
-                for product in products_info
-            ],
+            "products": response.css("#game_area_purchase").get(),
             "rating": response.css(
                 "#userReviews"
                 " .user_reviews_summary_row:last-child::attr(data-tooltip-html)"
