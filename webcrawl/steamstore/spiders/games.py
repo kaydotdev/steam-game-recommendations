@@ -115,23 +115,30 @@ class GamesSpider(scrapy.Spider):
         developer_info = response.css("#game_highlights .dev_row")
         app_id = response.css("*[data-appid]::attr(data-appid)").get()
 
-        self.logger.info(f"Parsing the game page with id={app_id}")
+        if app_id:
+            self.logger.info(f"Parsing the game page with id={app_id}")
 
-        yield {
-            "app_id": app_id,
-            "img_href": response.css("#gameHeaderImageCtn img::attr(src)").get(),
-            "title": response.css("#appHubAppName::text").get(),
-            "about": response.css("#game_highlights .game_description_snippet").get(),
-            "description": response.css("#game_area_description").get(),
-            "date_release": response.css(
-                "#game_highlights .release_date .date::text"
-            ).get(),
-            "products": response.css("#game_area_purchase").get(),
-            "rating": response.css(
-                "#userReviews"
-                " .user_reviews_summary_row:last-child::attr(data-tooltip-html)"
-            ).get(),
-            "developer": developer_info.css(".summary#developers_list").get(),
-            "publisher": developer_info.css(".summary:not(#developers_list)").get(),
-            "tags": response.css("#glanceCtnResponsiveRight a.app_tag::text").getall(),
-        }
+            yield {
+                "app_id": app_id,
+                "img_href": response.css("#gameHeaderImageCtn img::attr(src)").get(),
+                "title": response.css("#appHubAppName::text").get(),
+                "about": response.css(
+                    "#game_highlights .game_description_snippet"
+                ).get(),
+                "description": response.css("#game_area_description").get(),
+                "date_release": response.css(
+                    "#game_highlights .release_date .date::text"
+                ).get(),
+                "products": response.css("#game_area_purchase").get(),
+                "rating": response.css(
+                    "#userReviews"
+                    " .user_reviews_summary_row:last-child::attr(data-tooltip-html)"
+                ).get(),
+                "developer": developer_info.css(".summary#developers_list").get(),
+                "publisher": developer_info.css(".summary:not(#developers_list)").get(),
+                "tags": response.css(
+                    "#glanceCtnResponsiveRight a.app_tag::text"
+                ).getall(),
+            }
+        else:
+            self.logger.warning("Game id is missing on the page. Skipping...")
