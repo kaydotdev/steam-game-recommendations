@@ -2,8 +2,9 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import re
 
-from scrapy import signals
+from scrapy import Request, signals
 
 
 class SteamstoreSpiderMiddleware:
@@ -78,12 +79,24 @@ class SteamstoreDownloaderMiddleware:
         return None
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
+        # Handle redirects when the ID of the game was changed.
 
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
+        if response.status == 302 and "Location" in response.headers:
+            redirect_url = response.headers["Location"].decode("utf-8")
+
+            if re.search(r"steamcommunity\.com/app/\d+/?$", redirect_url):
+                new_redirect_url = (
+                    redirect_url.rstrip("/") + "/reviews/?filterLanguage=all&l=english"
+                )
+
+                spider.logger.info(
+                    f"Redirecting to the new game page: {new_redirect_url}"
+                )
+
+                return Request(
+                    redirect_url, callback=request.callback, dont_filter=True
+                )
+
         return response
 
     def process_exception(self, request, exception, spider):
